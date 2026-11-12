@@ -2,6 +2,7 @@ module f1_fsm (
     input   logic       rst,
     input   logic       en,
     input   logic       clk,
+    input   logic       trigger,
     output  logic [7:0] data_out,
     output  logic       cmd_delay,
     output  logic       cmd_seq
@@ -22,7 +23,7 @@ end
 always_comb begin
     next_state = current_state;
     case(current_state)
-        s0:     if(en)  next_state = s1;
+        s0:     if(trigger)  next_state = s1;
         s1:     if(en)  next_state = s2;
         s2:     if(en)  next_state = s3;
         s3:     if(en)  next_state = s4;
@@ -30,7 +31,7 @@ always_comb begin
         s5:     if(en)  next_state = s6;
         s6:     if(en)  next_state = s7;
         s7:     if(en)  next_state = s8; 
-        s8:     if(en)  next_state = s0; 
+        s8:     if(en)  next_state = s0;
         default: next_state = s0;
     endcase
 end
@@ -41,11 +42,17 @@ always_comb begin
         s2:     data_out = {{6{1'b0}}, {2{1'b1}}};
         s3:     data_out = {{5{1'b0}}, {3{1'b1}}};
         s4:     data_out = {{4{1'b0}}, {4{1'b1}}};
-        s5:     data_out = {{3{1'b0}}, {5{1'b1}}};
+        s5:     data_out = {{3{1'b0}}, {5{1'b1}}}; 
         s6:     data_out = {{2{1'b0}}, {6{1'b1}}};
         s7:     data_out = {{1{1'b0}}, {7{1'b1}}};
         s8:     data_out = {8{1'b1}};
         default: data_out = {{8{1'b0}}};
     endcase
 end
+
+// tick-driven while sequencing (s1..s7); time_out-driven in s8
+assign cmd_seq   = (current_state >= s1) && (current_state <= s7);
+// one-cycle pulse as the last tick moves s7 -> s8
+assign cmd_delay = (current_state == s7) && en;
+
 endmodule

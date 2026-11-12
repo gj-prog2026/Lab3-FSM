@@ -8,7 +8,6 @@ module top#(
     input logic                     trigger,
     input logic                     en,
     input logic     [N_WIDTH-1:0]   N,
-
     output logic    [D_WIDTH-1:0]   data_out
 );
 
@@ -44,10 +43,7 @@ delay #(.WIDTH(K_WIDTH))mydelay(
     .time_out(time_out)
 );
 
-always_comb begin
-    if(cmd_seq) enable <= tick;
-    else enable <= time_out;
-end
+assign enable = cmd_seq ? tick : time_out;
 
 
 f1_fsm myf1(
